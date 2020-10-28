@@ -1,25 +1,46 @@
+var fs = require('fs');
+const crypto = require('crypto');
+const { log } = require('console');
+
 // ===============================================================================
 // ROUTING
 // ===============================================================================
-// * The following API routes should be created:
 
-//   * GET `/api/notes` - Should read the `db.json` file and return all saved notes as JSON.
-
-//   * POST `/api/notes` - Should receive a new note to save on the request body, add it to the `db.json` file, and then return the new note to the client.
-
-//   * DELETE `/api/notes/:id` - Should receive a query parameter containing the id of a note to delete. This means you'll need to find a way to give each note a unique `id` when it's saved. In order to delete a note, you'll need to read all notes from the `db.json` file, remove the note with the given `id` property, and then rewrite the notes to the `db.json` file.
+let noteData = [];
 
 module.exports = function (app) {
     // API Requests
+    // read the `db.json` file and return all saved notes as JSON
     app.get("/api/notes", function (req, res) {
-
+        let dbContents = fs.readFileSync(__dirname + "/../db/db.json");
+        noteData = JSON.parse(dbContents);
+        res.send(noteData);
     });
 
+    // Receive a new note to save on the request body
     app.post("/api/notes", function (req, res) {
+        let newNote = req.body;
+        // assign the note a unique id
+        newNote.id = crypto.randomBytes(8).toString("hex");
 
+        // add it to the `db.json` file
+        noteData.push(newNote);
+        fs.writeFileSync(__dirname + "/../db/db.json", JSON.stringify(noteData), "UTF8");
+
+        // return the new note to the client.
+        res.send(newNote);
     });
 
+    // receive a query parameter containing the id of a note to delete. 
     app.delete("/api/notes/:id", function (req, res) {
+        // remove the note with the given id 
+        noteData = noteData.filter((item) => {
+            return item.id !== req.params.id;
+        });
+
+        // rewrite the notes to the `db.json` file.
+        fs.writeFileSync(__dirname + "/../db/db.json", JSON.stringify(noteData), "UTF8");
+
         res.json({ ok: true });
     });
 };
