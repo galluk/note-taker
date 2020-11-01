@@ -1,11 +1,16 @@
 {
   "name": "note-taker",
   "version": "1.0.0",
-  "description": "",
+  "description": "A simple note taker app",
   "main": "server.js",
   "scripts": {
     "start": "node server",
     "dev": "nodemon server"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "db/*.*"
+    ]
   },
   "author": "",
   "license": "ISC",
