@@ -18,6 +18,9 @@ let PORT = process.env.PORT || 8000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// allow the server to serve up static files within the public folder
+app.use(express.static('public'));
+
 // ================================================================================
 // ROUTER
 // Point the server to the required "route" files.
