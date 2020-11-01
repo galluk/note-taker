@@ -30,7 +30,7 @@ GNU General Public License v3.0
 
 ### Link to app on Heroku
 
-<a href="https://github.com/galluk/note-taker">Note Taker</a>
+<a href="https://mysterious-hollows-82662.herokuapp.com/">Note Taker</a>
 
 ### Link to the github Repo
 
