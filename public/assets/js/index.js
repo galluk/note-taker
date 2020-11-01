@@ -1,3 +1,4 @@
+// comment here
 const $noteTitle = $(".note-title");
 const $noteText = $(".note-textarea");
 const $saveNoteBtn = $(".save-note");
@@ -6,6 +7,7 @@ const $noteList = $(".list-container .list-group");
 
 // activeNote is used to keep track of the note in the textarea
 let activeNote = {};
+let lastId = '';
 
 // A function for getting all notes from the db
 const getNotes = () => {
@@ -32,34 +34,62 @@ const deleteNote = (id) => {
   });
 };
 
+// A function for updating a note in the db
+const updateNote = (note) => {
+  return $.ajax({
+    url: "/api/notes",
+    data: note,
+    method: "PUT",
+  });
+};
+
 // If there is an activeNote, display it, otherwise render empty inputs
 const renderActiveNote = () => {
   $saveNoteBtn.hide();
-
   if (activeNote.id) {
-    $noteTitle.attr("readonly", true);
-    $noteText.attr("readonly", true);
+    // $noteTitle.attr("readonly", true);
+    // $noteText.attr("readonly", true);
     $noteTitle.val(activeNote.title);
     $noteText.val(activeNote.text);
+    lastId = activeNote.id;
   } else {
     $noteTitle.attr("readonly", false);
     $noteText.attr("readonly", false);
     $noteTitle.val("");
     $noteText.val("");
+    lastId = '';
   }
 };
 
 // Get the note data from the inputs, save it to the db and update the view
 const handleNoteSave = function () {
-  const newNote = {
-    title: $noteTitle.val(),
-    text: $noteText.val(),
-  };
 
-  saveNote(newNote).then(() => {
-    getAndRenderNotes();
-    renderActiveNote();
-  });
+  // if the active note has an id it has already been saved so update
+  if (activeNote.id) {
+    activeNote.title = $noteTitle.val();
+    activeNote.text = $noteText.val();
+
+    updateNote(activeNote).then(() => {
+      getAndRenderNotes();
+      renderActiveNote();
+    });
+  }
+  // no id so save it as a new note
+  else {
+    const newNote = {
+      title: $noteTitle.val(),
+      text: $noteText.val(),
+    };
+
+    saveNote(newNote).then((data) => {
+      if (data) {
+        activeNote = data;
+        lastId = data.id;
+      }
+      getAndRenderNotes();
+      renderActiveNote();
+    });
+  }
 };
 
 // Delete the clicked note
@@ -71,6 +101,7 @@ const handleNoteDelete = function (event) {
 
   if (activeNote.id === note.id) {
     activeNote = {};
+    lastId = '';
   }
 
   deleteNote(note.id).then(() => {
@@ -130,6 +161,10 @@ const renderNoteList = (notes) => {
   notes.forEach((note) => {
     const $li = create$li(note.title).data(note);
     noteListItems.push($li);
+
+    if ((lastId !== '') && (note.id === lastId)) {
+      activeNote = note;
+    }
   });
 
   $noteList.append(noteListItems);
